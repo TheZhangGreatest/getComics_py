@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <property name="spacing">
+     <number>7</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="styleSheet">
+       <string notr="true">/* 整个 QTabWidget 面板区域 */
+QTabWidget::pane {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+/* TabBar 样式 */
+QTabBar::tab {
+    background: #f9f9f9;
+    color: #555555;
+    padding: 8px 18px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    min-width: 80px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+/* 悬浮效果 */
+QTabBar::tab:hover {
+    background-color: #e8f6f9;
+    color: #3a8fb7;
+}
+
+/* 当前选中标签 */
+QTabBar::tab:selected {
+    background-color: #ffffff;
+    color: #30b9a4;
+    font-weight: 600;
+    border-top: 2px solid #30b9a4;
+}
+
+/* 非选中标签向下偏移形成层次 */
+QTabBar::tab:!selected {
+    margin-top: 2px;
+}
+
+/* 可关闭按钮样式（如有） */
+QTabBar::close-button {
+    image: url(:/icons/close.svg); /* 可换成你的轻量图标 */
+    subcontrol-position: right;
+    margin-left: 6px;
+    width: 12px;
+    height: 12px;
+}
+
+/* 关闭按钮 hover 效果 */
+QTabBar::close-button:hover {
+    background-color: #ff7e7e;
+    border-radius: 6px;
+}
+
+/* Tab 内容区域 */
+QWidget#tabContent {
+    background-color: #ffffff;
+    border-top: none;
+    padding: 12px;
+}
+</string>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="Home" name="home">
+       <attribute name="title">
+        <string>首页</string>
+       </attribute>
+      </widget>
+      <widget class="Download" name="download">
+       <attribute name="title">
+        <string>下载</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="setting">
+       <attribute name="title">
+        <string>设置</string>
+       </attribute>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Home</class>
+   <extends>QWidget</extends>
+   <header>Controller.Home</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Download</class>
+   <extends>QWidget</extends>
+   <header>Controller.Download</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
