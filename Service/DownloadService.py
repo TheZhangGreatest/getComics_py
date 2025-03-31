@@ -30,7 +30,7 @@ class DownloadService(QObject):
         # 记录当前在队列里面的任务，避免重复添加
         self.task_set = set()
         # 线程池管理器
-        self.thread_pool = ThreadPoolManager(self)
+        self.thread_pool = ThreadPoolManager.instance(self)
         for chapter in self.chapters.values():
             if chapter.status == DownloadStatus.DOWNLOADING:
                 self.put_task(self.imageTaskMapper.list_by_chapter_id(chapter.id))
@@ -43,7 +43,7 @@ class DownloadService(QObject):
             # 过滤掉已经完成的任务，以及已经在队列中的任务
             if task.id not in self.task_set and task.status == DownloadStatus.DOWNLOADING:
                 self.task_set.add(task.id)
-                self.thread_pool.add_task(DownloadTask(self.downloadImage,task))
+                self.thread_pool.add_task(task.image_index,DownloadTask(self.downloadImage,task))
     def downloadImage(self,task: ImageTask = None):
         self.task_set.remove(task.id)  # 从任务集合中移除
         """工作线程，处理任务队列中的任务"""

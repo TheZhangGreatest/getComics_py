@@ -141,10 +141,10 @@ class Download(QWidget):
         else:
             self.tableModel.clearFilter(1)
 
-    def add_chapter_download_record(self, chapters: list):
-        for chapter in chapters:
-            self.appendRow(chapter)
-            self.download_service.add_chapter_task(chapter)
+    def add_chapter_download_record(self, chapter:ChapterTask):
+        """添加章节下载记录"""
+        self.appendRow(chapter)
+        self.download_service.add_chapter_task(chapter)
 
     def downloadButtonClicked(self):
         rows = self.ui.tableView.selectionModel().selectedRows()

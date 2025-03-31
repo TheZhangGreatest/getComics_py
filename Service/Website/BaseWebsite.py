@@ -10,6 +10,7 @@ from Enum.DownloadStatus import DownloadStatus
 from Service.DownloadService import DownloadService
 # 网站基类，定义了搜索和下载方法，以及搜索结果解析方法
 class BaseWebsite(QObject):
+    addChapterDownloadRecordFinished = pyqtSignal(object)
     def __init__(self, parent=None):
         super().__init__(parent)
         self.name = "base"
@@ -27,7 +28,6 @@ class BaseWebsite(QObject):
     def get_chapter_list(self, name):
         pass
     def add_chapter_download_record(self, chapters):
-        result = []
         for name in chapters:
             self.get_chapter_pages_number(name)
             chapter = ChapterTask()
@@ -42,8 +42,7 @@ class BaseWebsite(QObject):
             # 写入数据库
             chapter.id = self.chapter_task_mapper.insert(chapter)
             self.add_image_download_record(chapter.id, chapter.save_path+"/"+name)
-            result.append(chapter)
-        return result
+            self.addChapterDownloadRecordFinished.emit(chapter)
         
     def add_image_download_record(self, chapter_id,output_path):
         image = ImageTask()

@@ -8,7 +8,7 @@ from Config import Config
 from PyQt5.QtCore import pyqtSignal
 from Entity.ChapterTask import ChapterTask
 class Home(QWidget):
-    add_chapter_download_record = pyqtSignal(list)
+    add_chapter_download_record = pyqtSignal(object)
     def __init__(self, parent=None):
         super().__init__(parent)
         self.config = Config()
@@ -107,8 +107,8 @@ class Home(QWidget):
         self.ui.tableView.setColumnWidth(0, 50)  # 第一列固定 50px，保持正方形
         self.ui.tableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)  # 第一列固定大小
         self.ui.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-    def add_chapter_download_record_finished(self,chapters):
-        self.add_chapter_download_record.emit(chapters)
+    def add_chapter_download_record_finished(self,chapter):
+        self.add_chapter_download_record.emit(chapter)
 
 
 
