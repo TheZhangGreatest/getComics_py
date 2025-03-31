@@ -4,13 +4,11 @@ import threading
 
 class Database:
     _instance = None
-    _lock = threading.Lock()
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            with cls._lock:
-                if cls._instance is None:
-                    cls._instance = super().__new__(cls)
+            if cls._instance is None:
+                cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self, db_path="DB/comic_downloader.db"):
@@ -18,16 +16,19 @@ class Database:
             self.db_path = db_path
             self.initialized = True
             self._init_tables()
+            self._lock = threading.Lock()
 
     @contextmanager
     def connect(self):
-        conn = sqlite3.connect(self.db_path, check_same_thread=False)
+        conn = sqlite3.connect(self.db_path, check_same_thread=True)
         conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL;")
         try:
             yield conn
             conn.commit()
         except Exception as e:
             conn.rollback()
+            raise e
         finally:
             conn.close()
 

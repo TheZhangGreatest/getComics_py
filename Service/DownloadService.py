@@ -34,6 +34,7 @@ class DownloadService(QObject):
         for chapter in self.chapters.values():
             if chapter.status == DownloadStatus.DOWNLOADING:
                 self.put_task(self.imageTaskMapper.list_by_chapter_id(chapter.id))
+        
     def start(self):
         """启动下载服务"""
         self.thread_pool.start()
@@ -60,7 +61,6 @@ class DownloadService(QObject):
         if result:
             self.download_success(task, chapter)
         else:
-            self.logger.error(f"Download failed for {task.image_url}")
             self.download_failed(task, chapter)
     def download(self, task: ImageTask):
         try:
@@ -81,13 +81,13 @@ class DownloadService(QObject):
                 f.write(response.content)
             return True
         except requests.RequestException as e:
-            self.logger.error(f"Network error in download {task.image_url}: {e}")
+            self.logger.error(f"{task.chapter_id}-{task.image_index}:Network error in download {e}")
             return False
         except OSError as e:
-            self.logger.error(f"File error in download {task.image_url}: {e}")
+            self.logger.error(f"{task.chapter_id}-{task.image_index}:File error in download {e}")
             return False
         except Exception as e:
-            self.logger.exception(f"Unexpected error in download {task.image_url}: {e}")
+            self.logger.exception(f"{task.chapter_id}-{task.image_index}:Unexpected error in download {e}")
             return False
     def download_failed(self, task: ImageTask, chapter: ChapterTask):
         """下载失败，添加重试机制"""
@@ -104,18 +104,18 @@ class DownloadService(QObject):
     def download_success(self, task: ImageTask, chapter: ChapterTask):
         """下载成功，更新任务状态"""
         # 更新章节任务状态
-        with self.db.connect() as conn:  # 确保在同一事务中
+        with self.db._lock, self.db.connect() as conn:  # 确保在同一事务中
             with self.get_chapter_lock(chapter.id):
                 if chapter.id in self.chapters:
                     chapter.downloaded_images += 1
-                    self.logger.info(f"Downloaded {chapter.downloaded_images}/{chapter.total_images} images for {chapter.chapter_title}")
+                    self.logger.info(f"{task.chapter_id}-{task.image_index}:Downloaded {chapter.downloaded_images}/{chapter.total_images} images for {chapter.chapter_title}")
                     # 判断是否下载完成
                     if chapter.downloaded_images == chapter.total_images:
                         self.generate_comic_format(chapter)
                         chapter.status = DownloadStatus.SUCCESS
                         #删除任务
                         del self.chapters[chapter.id]
-                        self.logger.info(f"Download completed for {chapter.chapter_title}")
+                        self.logger.info(f"{task.chapter_id}-{task.image_index}:Download completed for {chapter.chapter_title}")
                     self.chapterTaskMapper.update_task(chapter,conn)
                     self.update_chapter_task.emit(chapter)
             # 更新图片任务状态

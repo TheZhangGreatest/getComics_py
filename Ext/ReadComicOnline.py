@@ -57,7 +57,6 @@ class ReadComicOnline(Service.Website.BaseWebsite.BaseWebsite):
         result = self.network_service.send_get_request(url)
         tree = etree.HTML(result["data"])
         list = tree.xpath('(//*[@id="selectPage"])/option')
-        self.cur_chapter_pages_number = len(list)
         # 同时把图片url解析出来
         text = result["data"]
         # 提取替换字符串
@@ -69,6 +68,7 @@ class ReadComicOnline(Service.Website.BaseWebsite.BaseWebsite):
         for match in matches:
             str = match.strip()
             self.image_url.append(self.parse_url(str[1:-2],replace_str[0]))
+        return len(list)
     # 解析url
     def parse_url(self, url, replace_str):
         # Replace custom rules

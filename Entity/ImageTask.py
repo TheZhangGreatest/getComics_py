@@ -9,7 +9,7 @@ class ImageTask:
     image_index: int = 0
     image_url: str = ""
     file_path: Optional[str] = None
-    status: str = 'downloading'   # downloading / success
+    status: str = 'downloading'   # downloading / success / failed
     retry_count: int = 0
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

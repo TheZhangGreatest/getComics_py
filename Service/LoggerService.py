@@ -20,6 +20,7 @@ class LoggerService:
         # 创建日志目录（如果不存在）
         os.makedirs(os.path.dirname(config.get("Logging","business_log")), exist_ok=True)
         os.makedirs(os.path.dirname(config.get("Logging","download_log")), exist_ok=True)
+        os.makedirs(os.path.dirname(config.get("Logging","database_log")), exist_ok=True)
 
         # 移除默认 Logger
         logger.remove()
@@ -32,6 +33,16 @@ class LoggerService:
             level=config.get("Logging","level"),
             format=config.get("Logging","format"),
             filter=lambda record: record["extra"].get("category") == "business"
+        )
+
+        # 添加数据库日志（数据库日志）
+        logger.add(
+            config.get("Logging","database_log"),
+            rotation=config.get("Logging","rotation"),
+            retention=config.get("Logging","retention"),
+            level=config.get("Logging","level"),
+            format=config.get("Logging","format"),
+            filter=lambda record: record["extra"].get("category") == "database"
         )
 
         # 添加下载日志（专门用于下载相关日志）
@@ -48,7 +59,8 @@ class LoggerService:
     def get_logger(category="business"):
         """
         获取日志对象
-        :param category: "business" 业务日志 / "download" 下载日志
+        :param category: "business" 业务日志 / "download" 下载日志 / "database" 数据库日志
+        :return: 日志对象
         """
         return logger.bind(category=category)
 

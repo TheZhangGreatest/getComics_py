@@ -6,7 +6,6 @@ import sqlite3
 from datetime import datetime
 from Enum.DownloadStatus import DownloadStatus
 class ChapterTaskMapper:
-    _lock = threading.Lock()
 
     def __init__(self):
         self.db = Database()
@@ -14,7 +13,7 @@ class ChapterTaskMapper:
     def insert(self, task: ChapterTask) -> int:
         task.updated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         task.created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with self._lock, self.db.connect() as conn:
+        with self.db.connect() as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO chapter_tasks (comic_title, chapter_title, total_images, downloaded_images, status, save_path, save_format, created_at, updated_at)
@@ -26,15 +25,14 @@ class ChapterTaskMapper:
     def update_task(self, task: ChapterTask,conn: Optional[sqlite3.Connection] = None):
         task.updated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if conn is not None:
-            with self._lock:
-                cursor = conn.cursor()
-                cursor.execute("""
-                    UPDATE chapter_tasks 
-                    SET status = ?, downloaded_images = ?, updated_at = ?
-                    WHERE id = ?
-                """, (task.status, task.downloaded_images, task.updated_at, task.id))
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE chapter_tasks 
+                SET status = ?, downloaded_images = ?, updated_at = ?
+                WHERE id = ?
+            """, (task.status, task.downloaded_images, task.updated_at, task.id))
         else:
-            with self._lock, self.db.connect() as conn:
+            with self.db.connect() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     UPDATE chapter_tasks 
@@ -65,6 +63,6 @@ class ChapterTaskMapper:
             return  # 防止空删除
         placeholders = ','.join(['?'] * len(ids))  # 生成 ?,?,? 占位
         sql = f"DELETE FROM chapter_tasks WHERE id IN ({placeholders})"
-        with self._lock, self.db.connect() as conn:
+        with self.db.connect() as conn:
             cursor = conn.cursor()
             cursor.execute(sql, ids)
