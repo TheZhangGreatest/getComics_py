@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from Service.NetworkService import NetworkService
 from PyQt5.QtCore import pyqtSignal, QObject
 from Mapper.ChapterTaskMapper import ChapterTaskMapper
@@ -7,8 +6,6 @@ from Entity.ImageTask import ImageTask
 from Entity.ChapterTask import ChapterTask
 from Config import Config
 from Enum.DownloadStatus import DownloadStatus
-from Service.DownloadService import DownloadService
-import threading
 # 网站基类，定义了搜索和下载方法，以及搜索结果解析方法
 class BaseWebsite(QObject):
     addChapterDownloadRecordFinished = pyqtSignal(object)

@@ -11,12 +11,11 @@ class Database:
                 cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, db_path="DB/comic_downloader.db"):
+    def __init__(self, db_path="database/comic_downloader.db"):
         if not hasattr(self, 'initialized'):
             self.db_path = db_path
             self.initialized = True
             self._init_tables()
-            self._lock = threading.Lock()
 
     @contextmanager
     def connect(self):

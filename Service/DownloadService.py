@@ -91,10 +91,11 @@ class DownloadService(QObject):
             return False
     def download_failed(self, task: ImageTask, chapter: ChapterTask):
         """下载失败，添加重试机制"""
+        # 逻辑更新，不记录到数据库，后面还可以重新下载
         if task.retry_count < int(self.config.get('App', 'max_retry', 3)):
             task.retry_count += 1
             self.put_task([task])
-            self.logger.info(f"Retrying download for {task.image_url}, attempt {task.retry_count}")
+            self.logger.info(f"{task.chapter_id}-{task.image_index}:Retrying download, attempt {task.retry_count}")
         else:
             with self.get_chapter_lock(chapter.id):
                 if chapter.id in self.chapters:
@@ -104,7 +105,7 @@ class DownloadService(QObject):
     def download_success(self, task: ImageTask, chapter: ChapterTask):
         """下载成功，更新任务状态"""
         # 更新章节任务状态
-        with self.db._lock, self.db.connect() as conn:  # 确保在同一事务中
+        with self.db.connect() as conn:  # 确保在同一事务中
             with self.get_chapter_lock(chapter.id):
                 if chapter.id in self.chapters:
                     chapter.downloaded_images += 1

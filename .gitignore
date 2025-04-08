@@ -1,6 +1,8 @@
 **/__pycache__/
 .vscode/
 downloads/
-DB/
+database/
 logs/
 *.html
+*.pyd
+*.pyi
