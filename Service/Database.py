@@ -15,21 +15,23 @@ class Database:
         if not hasattr(self, 'initialized'):
             self.db_path = db_path
             self.initialized = True
+            self._lock = threading.Lock()  # 用来控制连接
             self._init_tables()
 
     @contextmanager
     def connect(self):
-        conn = sqlite3.connect(self.db_path, check_same_thread=True)
-        conn.row_factory = sqlite3.Row
-        conn.execute("PRAGMA journal_mode=WAL;")
-        try:
-            yield conn
-            conn.commit()
-        except Exception as e:
-            conn.rollback()
-            raise e
-        finally:
-            conn.close()
+        with self._lock:  # 先拿锁
+            conn = sqlite3.connect(self.db_path, check_same_thread=True)
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA journal_mode=WAL;")
+            try:
+                yield conn
+                conn.commit()
+            except Exception as e:
+                conn.rollback()
+                raise e
+            finally:
+                conn.close()
 
     def _init_tables(self):
         with self.connect() as conn:

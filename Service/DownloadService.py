@@ -135,18 +135,41 @@ class DownloadService(QObject):
             os.rmdir(images_path)
             
 
-    def generate_comic_pdf(self, folder_path, output_pdf_path):
+    def generate_comic_pdf(self, folder_path, output_pdf_path, target_width=1080):
+        # 收集图片
         image_files = sorted(
-            [os.path.join(os.path.normpath(folder_path), f) for f in os.listdir(folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
+            [os.path.join(os.path.normpath(folder_path), f) 
+             for f in os.listdir(folder_path) 
+             if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
         )
-        if not image_files:
-            print("No image files found")
-            return
 
-        images = [Image.open(img_path).convert('RGB') for img_path in image_files]
+        if not image_files:
+            print("No image files found.")
+            return
+        
+        images = []
+        for img_path in image_files:
+            try:
+                img = Image.open(img_path).convert('RGB')
+                # 统一宽度，按比例缩放
+                w_percent = (target_width / float(img.width))
+                target_height = int((float(img.height) * float(w_percent)))
+                resized_img = img.resize((target_width, target_height), Image.LANCZOS)
+                images.append(resized_img)
+            except Exception as e:
+                print(f"Error processing {img_path}: {e}")
+
+        if not images:
+            print("No valid images to generate PDF.")
+            return
+        
         first_img = images.pop(0)
-        first_img.save(output_pdf_path, save_all=True, append_images=images, quality=95)
-        print(f"Comic PDF generated: {output_pdf_path}")
+        try:
+            first_img.save(output_pdf_path, save_all=True, append_images=images, quality=95)
+            print(f"Comic PDF generated: {output_pdf_path}")
+        except Exception as e:
+            print(f"Failed to save PDF: {e}")
+
 
     def generate_comic_cbz(self, folder_path, output_cbz_path):
         image_files = sorted(

@@ -6,7 +6,8 @@ from PyQt5.QtCore import Qt
 from View.Delegate.CenteredCheckBoxDelegate import CenteredCheckBoxDelegate
 from Config import Config
 from PyQt5.QtCore import pyqtSignal
-from Entity.ChapterTask import ChapterTask
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QShortcut
 class Home(QWidget):
     add_chapter_download_record = pyqtSignal(object)
     def __init__(self, parent=None):
@@ -24,7 +25,6 @@ class Home(QWidget):
 
         # 绑定事件
         self.ui.searchButton.clicked.connect(self.searchButtonClicked)
-        self.ui.checkAllBox.stateChanged.connect(self.checkAllBoxStateChanged)
         self.ui.downloadButton.clicked.connect(self.downloadButtonClicked)
         self.ui.comboBox.currentIndexChanged.connect(self.comboBoxIndexChanged)
         self.ui.resultList.clicked.connect(self.resultListClicked)
@@ -35,35 +35,29 @@ class Home(QWidget):
         # 绑定数据
         self.resultListMoel = QStandardItemModel()
         self.ui.resultList.setModel(self.resultListMoel)
+
         self.tableModel = QStandardItemModel()
         self.ui.tableView.setModel(self.tableModel)
-
-        self.tableModel.setColumnCount(2)  # 两列：复选框 + 一列数据
-
-        self.ui.tableView.setColumnWidth(0, 50)  # 第一列固定 50px，保持正方形
-        self.ui.tableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)  # 第一列固定大小
-        self.ui.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.ui.tableView.setItemDelegateForColumn(0, CenteredCheckBoxDelegate())
+        self.tableModel.setColumnCount(1)  #一列数据
+        self.ui.tableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.ui.tableView.setAlternatingRowColors(True)  # 设置交替行颜色
-        self.tableModel.itemChanged.connect(self.tableItemChanged)
+
+        # 添加快捷键
+        QShortcut(QKeySequence("Ctrl+A"), self, activated=self.select_all_rows)
+    def select_all_rows(self):
+        """全选"""
+        self.ui.tableView.selectAll()
 
     def searchButtonClicked(self):
         # 使用搜索内容发送
         self.websitesevice.search(self.ui.searchInput.text())
-        
-    def checkAllBoxStateChanged(self):
-        check_state = self.ui.checkAllBox.checkState()
-        self.tableModel.blockSignals(True)
-        for i in range(self.tableModel.rowCount()):
-            self.tableModel.item(i, 0).setCheckState(check_state)
-        self.tableModel.blockSignals(False)
-        self.ui.tableView.viewport().update()
+    
 
     def downloadButtonClicked(self):
+        rows = self.ui.tableView.selectionModel().selectedRows()
         chapters = []
-        for i in range(self.tableModel.rowCount()):
-            if self.tableModel.item(i, 0).checkState() == Qt.Checked:
-                chapters.append(self.tableModel.item(i, 1).text())
+        for row in rows:
+            chapters.append(self.tableModel.data(self.tableModel.index(row.row(), 0), Qt.DisplayRole))
         self.websitesevice.add_chapter_download_record(chapters)
 
     
@@ -74,23 +68,6 @@ class Home(QWidget):
         selected_text = index.data()  # 获取选中行的文本
         self.websitesevice.get_chapter_list(selected_text)
     
-    def tableItemChanged(self, item):
-        if item.column() == 0:  # 只关心勾选框列
-            checked_count = 0
-            for i in range(self.tableModel.rowCount()):
-                if self.tableModel.item(i, 0).checkState() == Qt.Checked:
-                    checked_count += 1
-
-            if checked_count == self.tableModel.rowCount() and self.tableModel.rowCount() > 0:
-                # 全选上了，勾上全选框
-                self.ui.checkAllBox.blockSignals(True)
-                self.ui.checkAllBox.setCheckState(Qt.Checked)
-                self.ui.checkAllBox.blockSignals(False)
-            else:
-                # 有取消选择，去掉全选框
-                self.ui.checkAllBox.blockSignals(True)
-                self.ui.checkAllBox.setCheckState(Qt.Unchecked)
-                self.ui.checkAllBox.blockSignals(False)
     def updateResultList(self,result):
         self.resultListMoel.clear()
         for item in result:
@@ -98,15 +75,9 @@ class Home(QWidget):
     def updateTableModel(self,result):
         self.tableModel.clear()
         for item in result:
-            """添加一行数据"""
-            check_item = QStandardItem()
-            check_item.setCheckState(Qt.Unchecked)
-            check_item.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)  # 让复选框可用但不能编辑文本
             name_item = QStandardItem(item)  # 姓名
-            self.tableModel.appendRow([check_item, name_item]) 
-        self.ui.tableView.setColumnWidth(0, 50)  # 第一列固定 50px，保持正方形
-        self.ui.tableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)  # 第一列固定大小
-        self.ui.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+            self.tableModel.appendRow([name_item]) 
+        self.ui.tableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
     def add_chapter_download_record_finished(self,chapter):
         self.add_chapter_download_record.emit(chapter)
 

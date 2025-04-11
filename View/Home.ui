@@ -85,13 +85,6 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_16">
          <item>
-          <widget class="QCheckBox" name="checkAllBox">
-           <property name="text">
-            <string>全选</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <spacer name="horizontalSpacer_6">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -122,10 +115,10 @@
           <bool>true</bool>
          </property>
          <property name="selectionMode">
-          <enum>QAbstractItemView::SingleSelection</enum>
+          <enum>QAbstractItemView::ExtendedSelection</enum>
          </property>
          <property name="selectionBehavior">
-          <enum>QAbstractItemView::SelectItems</enum>
+          <enum>QAbstractItemView::SelectRows</enum>
          </property>
          <property name="gridStyle">
           <enum>Qt::SolidLine</enum>

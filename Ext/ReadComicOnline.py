@@ -65,6 +65,7 @@ class ReadComicOnline(Service.Website.BaseWebsite.BaseWebsite):
         # 提取图片url
         pattern = r'^\s*pht\s*=\s*(.*)'
         matches = re.findall(pattern, text, re.MULTILINE)
+        self.image_url = []
         for match in matches:
             str = match.strip()
             self.image_url.append(self.parse_url(str[1:-2],replace_str[0]))
